@@ -67,7 +67,6 @@ const sendAndExpectResponse = (data) =>
  */
 const dumpMemory = async (filename) => {
   console.log("");
-  process.stdout;
   const DUMP_SIZE = 0x8000;
   let idx = 0;
   let dumpBuffer = Buffer.alloc(0);
@@ -142,12 +141,12 @@ const uploadData = async (data) => {
   process.stdout.write("\n");
 };
 
-const data = Buffer.from(
-  Array(32768)
-    .fill(1)
-);
-
 port.on("open", () => {
+  const data = Buffer.from(
+    Array(32768)
+      .fill(1)
+  );
+
   console.log("the port is open");
 
   acker.once("data", () => {
