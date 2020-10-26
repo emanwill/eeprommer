@@ -13,11 +13,11 @@ octet), followed by a single octet describing the command that is to be
 executed by the Arduino, followed by 0 up to and including 62 bytes of
 command-specific payload data:
 
-   0                   1                   2                   3
-   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  |     Length    |    Command    |              Data             |
-  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   0               1               2               3              
+   0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 ...  ... 6 7
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-//-+-+-+-+
+  |     Length    |    Command    |        Payload        //       |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-//-+-+-+-+
 
 
 1. Command Messages
@@ -31,18 +31,18 @@ Command byte: 'r' (0x72 / ASCII 114)
 Data: 16 bit address in network byte order. Since the AT28C256 has only 15
 address lines, only the 15 lower bits are used. The leading, MSB is unused.
 
-   0                   1                   2                   3
-   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   0               1               2               3
+   0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   |        3      |       'r'     |0|      15 bit address         |
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 The response is a message containing the value at the specified address:
 
-   0                   1
-   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+   0               1
+   0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  |        1      |     value     |
+  |        1      |     Value     |
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 
@@ -54,8 +54,8 @@ Data: 3 bytes, broken down as follows: 2 bytes containing a 15 bit address
 in network byte order, followed by one octet of data to be written to the
 specified address.
 
-   0                   1                   2                   3
-   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   0               1               2               3
+   0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   |        4      |       'w'     |0|      15 bit address         |
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -67,13 +67,14 @@ and a new command can be sent. An acknowledgement message is defined as a
 single 0-byte.
 
 
+
 1.3. Dump
 
 Command byte: 'd' (0x64 / ASCII 100)
 Data: No payload following the command byte.
 
-   0                   1
-   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+   0               1
+   0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   |        1      |       'd'     |
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -81,6 +82,12 @@ Data: No payload following the command byte.
 The response is the raw contents of the entire EEPROM. This is returned as a
 sequence of messages each starting with a length octet, followed by up to 63
 bytes of raw payload data.
+
+   0               1               2               3              
+   0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 ...  ... 6 7
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-//-+-+-+-+
+  |     Length    |        Payload                        //       |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-//-+-+-+-+
 
 Each message is explicitly and synchronously acknowledged by the client using
 a 0-byte acknowledgement message before the next message is sent.
@@ -91,6 +98,7 @@ after the final message as no further communication will be initiated by the
 circuit to warrant flow control.
 
 
+
 1.4. Load
 
 Command byte: 'l' (0x6C / ASCII 108)
@@ -98,14 +106,20 @@ Data: 2 bytes indicating the size of the upload that follows the request
 message. Since the AT28C256 has only 15 address lines, only the lower 15 bits
 are used. The leading, MSB is ignored.
 
-   0                   1                   2                   3
-   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   0               1               2               3
+   0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   |        3      |       'l'     |0|       15 bit length         |
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 Directly following the command message is the stream of messages each starting
 with a length octet, followed by up to 63 bytes of raw payload data.
+
+   0               1               2               3              
+   0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 ...  ... 6 7
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-//-+-+-+-+
+  |     Length    |        Payload                        //       |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-//-+-+-+-+
 
 Each message is explicitly and synchronously acknowledged by the Arduino using
 a 0-byte acknowledgement message before the next message is sent. This includes
@@ -118,19 +132,21 @@ The Arduino acknowledges the final message with a 0-byte message.
 Writing always begins at address 0.
 
 
+
 1.5 Reset
 
-Command byte: 'r' (0x72 / ASCII 114)
+Command byte: 's' (0x73 / ASCII 114)
 Data: No payload following the command byte.
 
-   0                   1
-   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+   0               1
+   0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  |        1      |       'r'     |
+  |        1      |       's'     |
   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 Immediately abort the pending operation and wait for a new command. No
 acknowledgement is sent.
+
 
 
 2.0 Flow Control

@@ -1,95 +1,79 @@
-#!/usr/bin/env node
+const { program } = require("commander");
+const { getConfig } = require("./lib/util");
 
-const fs = require("fs");
-const { promisify } = require("util");
-const SerialPort = require("serialport");
-const argv = require("minimist")(process.argv.slice(2));
-const { SerialMsgFactory } = require("./serial-msg-factory");
-const { SerialMsgParser } = require("./serial-msg-parser");
+const DUMP = require("./lib/dump");
+const GET = require("./lib/get");
+const LIST = require("./lib/list");
+const LOAD = require("./lib/load");
+const READ = require("./lib/read");
+const SET = require("./lib/set");
+const WRITE = require("./lib/write");
 
-const readFilePromise = promisify(fs.readFile);
+const config = getConfig();
 
-const CMDS = ["read", "write", "dump", "load"];
-if (argv._.length === 0 || !CMDS.includes(argv._[0])) {
-  console.log('Please specify a command: "read", "write, "dump", or "load"');
-  process.exit(1);
+program.version("0.0.1");
+
+program
+  .command("dump <target_file>")
+  .alias("d")
+  .description("dumps the EEPROM contents to a file", {
+    target_file: "name of target file for dump contents",
+  })
+  .option("-p, --port <port>", "EEPROMMER serial port", config.port)
+  .action(DUMP);
+
+program
+  .command("get <key>")
+  .description("prints a value from the CLI config", {
+    key: "key",
+  })
+  .action(GET);
+
+program
+  .command("list")
+  .alias("ls")
+  .description("lists available ports")
+  .action(LIST);
+
+program
+  .command("load <source_file>")
+  .alias("ld")
+  .description("dumps the EEPROM contents to the terminal or a file", {
+    source_file: "name of binary source file",
+  })
+  .option("-p, --port <port>", "EEPROMMER serial port", config.port)
+  .option("-v, --validate", "validate EEPROM contents after loading", false)
+  .action(LOAD);
+
+program
+  .command("read <address>")
+  .alias("r")
+  .description("reads a byte from the EEPROM", {
+    address: "15-bit address, in decimal or hex; e.g. '31250' or '0x8e01'",
+  })
+  .option("-p, --port <port>", "EEPROMMER serial port", config.port)
+  .action(READ);
+
+program
+  .command("set <key> <value>")
+  .description("sets a value in the CLI config", {
+    key: "key",
+    value: "value",
+  })
+  .action(SET);
+
+program
+  .command("write <address> <byte>")
+  .alias("w")
+  .description("writes a byte to the EEPROM", {
+    address: "15-bit address, in decimal or hex; e.g. '17925' or '0x0c21'",
+    byte: "single byte, in decimal or hex; e.g. '83' or '0xff'",
+  })
+  .option("-p, --port <port>", "EEPROMMER serial port", config.port)
+  .action(WRITE);
+
+program.parseAsync(process.argv).catch(console.error);
+
+if (process.argv.length < 2) {
+  program.outputHelp();
 }
-const CMD = argv._[0];
-
-console.log(argv);
-
-const isValidByte = (b) => {
-  const n = parseInt(b);
-  return !isNaN(n) && n >= 0 && n < 1 << 8;
-};
-
-const isValidAddress = (a) => {
-  const n = parseInt(a);
-  return !isNaN(n) && a >= 0 && a < 1 << 15;
-};
-
-if (!argv.p) {
-  console.log(`Please specify a port using "-p", e.g. "-p COM1"`);
-  process.exit(1);
-}
-
-if (CMD === "read" && (!argv.a || !isValidAddress(argv.a))) {
-  console.log(`Please specify a valid address using "-a", e.g. "-a 0x01a7"`);
-  process.exit(1);
-}
-
-if (CMD === "write" && (!argv.a || !isValidAddress(argv.a))) {
-  console.log(`Please specify a valid address using "-a", e.g. "-a 0x01a7"`);
-  process.exit(1);
-}
-
-if (CMD === "write" && (!argv.b || !isValidByte(argv.b))) {
-  console.log(`Please specify a valid byte using "-b", e.g. "-b 0xa0"`);
-  process.exit(1);
-}
-
-if (CMD === "load" && !argv.f) {
-  console.log(`Please specify a file using "-f", e.g. "-f myfile.bin"`);
-  process.exit(1);
-}
-
-const port = new SerialPort(argv.p, { baudRate: 9600 });
-// const parser = port.pipe(new SerialMsgParser());
-
-const send = (data) =>
-  new Promise((res, rej) =>
-    port.write(data, (err, data) => (err ? rej(err) : res(data)))
-  );
-
-port.on("open", () => {
-  console.log("serial port open");
-
-  port.on("close", () => {
-    console.log("HEY!");
-  });
-
-  let promise = Promise.resolve();
-  let command;
-  switch (CMD) {
-    case "read":
-      port.on("data", (data) => {
-        console.log("got stuff:", data);
-      });
-      command = SerialMsgFactory.read(parseInt(argv.a));
-      console.log(command);
-      promise = promise.then(() => send(command));
-      break;
-    case "dump":
-      parser.on("data", (data) => {
-        console.log(data);
-      });
-      promise = promise.then(() => send(SerialMsgFactory.dump()));
-      break;
-  }
-
-  promise
-    .finally(() => {
-      // port.close();
-    })
-    .catch(console.error);
-});
