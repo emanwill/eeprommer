@@ -1,5 +1,18 @@
 #!/usr/bin/env node
 
+const onetime = require("onetime");
+const signalExit = require("signal-exit");
+
+// Restore cursor if process fails
+onetime(() => {
+  signalExit(
+    () => {
+      process.stderr.write("\u001B[?25h");
+    },
+    { alwaysLast: true }
+  );
+})();
+
 const { program } = require("commander");
 const { getConfig } = require("./lib/util");
 
