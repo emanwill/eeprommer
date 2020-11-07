@@ -1,29 +1,31 @@
 /**
   AT28C256 EEPROM reader and programmer
 
+  Works with Arduino Nano Every
 
-  Arduino Nano Every Pin  |  Circuit Pin
-  ------------------------+------------------------------------
-        PORTD.0 (pin A3)  |  EEPROM Data 0 (pin 11)
-        PORTD.1 (pin A2)  |  EEPROM Data 1 (pin 12)
-        PORTD.2 (pin A1)  |  EEPROM Data 2 (pin 13)
-        PORTD.3 (pin A0)  |  EEPROM Data 3 (pin 15)
-        PORTD.4 (pin A6)  |  EEPROM Data 4 (pin 16)
-        PORTD.5 (pin A7)  |  EEPROM Data 5 (pin 17)
-        PORTA.2 (pin A4)  |  EEPROM Data 6 (pin 18)
-        PORTA.3 (pin A5)  |  EEPROM Data 7 (pin 19)
-                          |
-        PORTA.0 (pin D2)  |  EEPROM WE (pin 27, active low)
-        PORTA.1 (pin D7)  |  EEPROM CE (pin 20, active low)
-        PORTF.5 (pin D3)  |  EEPROM OE (pin 22, active low)
-  ------------------------+------------------------------------
-        PORTB.0 (pin D9)  |  74CH595 RCLR (pin 10, active low)
-        PORTB.2 (pin D5)  |  74CH595 SER (pin 14)
-        PORTC.6 (pin D4)  |  74CH595 OE (pin 13, active low)
-        PORTE.3 (pin D8)  |  74CH595 RCLK (pin 12, active high)
-        PORTF.4 (pin D6)  |  74CH595 SRCLK (pin 11, active high)
-  ------------------------+------------------------------------
-        PORTE.2 (pin D13) |  Status LED
+
+         Arduino Pin  |  Circuit Pin
+  --------------------+------------------------------------
+    PORTD.0 (pin A3)  |  EEPROM Data 0 (pin 11)
+    PORTD.1 (pin A2)  |  EEPROM Data 1 (pin 12)
+    PORTD.2 (pin A1)  |  EEPROM Data 2 (pin 13)
+    PORTD.3 (pin A0)  |  EEPROM Data 3 (pin 15)
+    PORTD.4 (pin A6)  |  EEPROM Data 4 (pin 16)
+    PORTD.5 (pin A7)  |  EEPROM Data 5 (pin 17)
+    PORTA.2 (pin A4)  |  EEPROM Data 6 (pin 18)
+    PORTA.3 (pin A5)  |  EEPROM Data 7 (pin 19)
+                      |
+    PORTA.0 (pin D2)  |  EEPROM WE (pin 27, active low)
+    PORTF.5 (pin D3)  |  EEPROM OE (pin 22, active low)
+    PORTA.1 (pin D7)  |  EEPROM CE (pin 20, active low)
+  --------------------+------------------------------------
+    PORTB.2 (pin D5)  |  74CH595 SER (pin 14)
+    PORTC.6 (pin D4)  |  74CH595 OE (pin 13, active low)
+    PORTF.4 (pin D6)  |  74CH595 SRCLK (pin 11, active high)
+    PORTE.3 (pin D8)  |  74CH595 RCLK (pin 12, active high)
+    PORTB.0 (pin D9)  |  74CH595 RCLR (pin 10, active low)
+  --------------------+------------------------------------
+    PORTE.2 (pin D13) |  Status LED
 */
 
 #include <Arduino.h>
@@ -57,7 +59,7 @@ const unsigned char STATUS_CODES[] = {
 const unsigned int MAX_PAYLOAD_SIZE = 63;
 
 // Status signal settings
-const unsigned int SPEED = 12;
+const unsigned int SPEED = 10;
 const unsigned int DOTLEN = 1200 / SPEED;
 const unsigned int DASHLEN = 3 * DOTLEN;
 
