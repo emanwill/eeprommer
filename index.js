@@ -1,7 +1,20 @@
 #!/usr/bin/env node
+// @ts-check
 
-const onetime = require("onetime");
-const signalExit = require("signal-exit");
+import onetime from "onetime";
+import signalExit from "signal-exit";
+import { program } from "commander";
+
+import { getConfig } from "./lib/util.js";
+
+import DUMP from "./lib/dump.js";
+import GET from "./lib/get.js";
+import LIST from "./lib/list.js";
+import LOAD from "./lib/load.js";
+import READ from "./lib/read.js";
+import SET from "./lib/set.js";
+import WRITE from "./lib/write.js";
+import TRUNCATE from "./lib/truncate.js";
 
 // Restore cursor if process fails
 onetime(() => {
@@ -13,35 +26,22 @@ onetime(() => {
   );
 })();
 
-const { program } = require("commander");
-const { getConfig } = require("./lib/util");
-
-const DUMP = require("./lib/dump");
-const GET = require("./lib/get");
-const LIST = require("./lib/list");
-const LOAD = require("./lib/load");
-const READ = require("./lib/read");
-const SET = require("./lib/set");
-const WRITE = require("./lib/write");
-
 const config = getConfig();
 
 program.version("0.0.1");
 
 program
-  .command("dump <target_file>")
+  .command("dump")
   .alias("d")
-  .description("dumps the EEPROM contents to a file", {
-    target_file: "name of target file for dump contents",
-  })
+  .description("dumps the EEPROM contents to a file")
+  .argument("<filename>", "dump file name")
   .option("-p, --port <port>", "EEPROMMER serial port", config.port)
   .action(DUMP);
 
 program
-  .command("get <key>")
-  .description("prints a value from the CLI config", {
-    key: "key",
-  })
+  .command("get")
+  .description("prints a value from the CLI config")
+  .argument("<key>", "key")
   .action(GET);
 
 program
@@ -51,41 +51,52 @@ program
   .action(LIST);
 
 program
-  .command("load <source_file>")
+  .command("load")
   .alias("ld")
-  .description("dumps the EEPROM contents to the terminal or a file", {
-    source_file: "name of binary source file",
-  })
+  .description("dumps the EEPROM contents to the terminal or a file")
+  .argument("<source_file>", "path to binary source file")
   .option("-p, --port <port>", "EEPROMMER serial port", config.port)
   .option("-v, --validate", "validate EEPROM contents after loading", false)
   .action(LOAD);
 
 program
-  .command("read <address>")
+  .command("read")
   .alias("r")
-  .description("reads a byte from the EEPROM", {
-    address: "15-bit address, in decimal or hex; e.g. '31250' or '0x8e01'",
-  })
+  .description("reads a byte from the EEPROM")
+  .argument(
+    "<address>",
+    "15-bit address, in decimal or hex; e.g. '31250' or '0x8e01'"
+  )
   .option("-p, --port <port>", "EEPROMMER serial port", config.port)
   .action(READ);
 
 program
-  .command("set <key> <value>")
-  .description("sets a value in the CLI config", {
-    key: "key",
-    value: "value",
-  })
+  .command("set")
+  .description("sets a value in the CLI config")
+  .argument("<key>", "key")
+  .argument("<value>", "value")
   .action(SET);
 
 program
-  .command("write <address> <byte>")
+  .command("write")
   .alias("w")
-  .description("writes a byte to the EEPROM", {
-    address: "15-bit address, in decimal or hex; e.g. '17925' or '0x0c21'",
-    byte: "single byte, in decimal or hex; e.g. '83' or '0xff'",
-  })
+  .description("writes a byte to the EEPROM")
+  .argument(
+    "<address>",
+    "15-bit address, in decimal or hex; e.g. '17925' or '0x0c21'"
+  )
+  .argument("<byte>", "single byte, in decimal or hex; e.g. '83' or '0xff'")
   .option("-p, --port <port>", "EEPROMMER serial port", config.port)
   .action(WRITE);
+
+program
+  .command("truncate")
+  .description("truncates a .bin file to the correct length")
+  .alias("t")
+  .argument("<filename>", "name of file to truncate")
+  .option("-r, --rename <name>", "name of truncated file", "")
+  .option("-o, --offset <bytes>", "Offset from start of file in bytes", "0")
+  .action(TRUNCATE);
 
 program.parseAsync(process.argv).catch(console.error);
 

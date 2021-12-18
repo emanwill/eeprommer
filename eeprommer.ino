@@ -48,12 +48,12 @@ enum STATUS
 };
 
 const unsigned char STATUS_CODES[] = {
-    0b00000001, // OK              = (no code)
-    0b00000100, // ERR_INVALID_CMD = "I" ..
-    0b00001010, // ERR_RESET       = "R" .-.
-    0b00010101, // ERR_CORRUPT_PKT = "C" -.-.
-    0b00011001, // ERR_UNEXPECTED  = "X" -..-
-    0b00001100  // ERR_UNKNOWN     = "U" ..-
+  0b00000001, // OK              = (no code)
+  0b00000100, // ERR_INVALID_CMD = "I" ..
+  0b00001010, // ERR_RESET       = "R" .-.
+  0b00010101, // ERR_CORRUPT_PKT = "C" -.-.
+  0b00011001, // ERR_UNEXPECTED  = "X" -..-
+  0b00001100  // ERR_UNKNOWN     = "U" ..-
 };
 
 const unsigned int MAX_PAYLOAD_SIZE = 63;
@@ -501,9 +501,9 @@ unsigned char readDataBus()
 void writeDataBus(unsigned char value)
 {
   // PORT#                   76543210
-  PORTD.OUTSET =  (value & 0b00111111);
+  PORTD.OUTSET = (value & 0b00111111);
   PORTD.OUTCLR = (~value & 0b00111111);
-  PORTA.OUTSET =  (value & 0b11000000) >> 4;
+  PORTA.OUTSET = (value & 0b11000000) >> 4;
   PORTA.OUTCLR = (~value & 0b11000000) >> 4;
 }
 
